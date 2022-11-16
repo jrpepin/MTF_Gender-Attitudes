@@ -109,7 +109,7 @@ fig1 <- fig1d %>%
 
 fig1
 
-ggsave("fig1.png", path = figDir, fig1, width = 9, height = 6, dpi = 300)
+ggsave("fig1.png", path = figDir, fig1, width = 9, height = 6, dpi = 300, bg = 'white')
 
 #####################################################################################
 # Figure 2. Young Adults' Gender Attitudes -- by gender
@@ -151,12 +151,13 @@ fig2 <- fig2d %>%
         panel.grid.minor.x = element_blank(),
         panel.grid.minor.y = element_blank()) +
   labs(title = "Young People's Attitudes About Gender in Families",
-       caption = "Monitoring the Future Surveys (1976 - 2021) | Joanna Pepin")
+       caption = "Monitoring the Future 12th-Grade Surveys (1976 -2021) | Joanna Pepin
+       * 'women takes care of home' item was not asked on the 2021 survey")
   
 
 fig2
   
-ggsave("fig2.png", path = figDir, fig2, width = 6, height = 6, dpi = 300)
+ggsave("fig2.png", path = figDir, fig2, width = 6, height = 6, dpi = 300, bg = 'white')
 
 #####################################################################################
 # Figure 3. Young Adults' Gender Attitudes -- by moms' employment
