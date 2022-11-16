@@ -1,4 +1,11 @@
-# PACKAGES --------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# GENDER ATTITUDES PROJECT
+# GA_00_setup and packages.R
+# Joanna R. Pepin
+#-------------------------------------------------------------------------------
+
+
+# PACKAGES ---------------------------------------------------------------------
 
 ## WARNING: Remove the leading # to install packages below the first time. 
 ## Change filepaths below once
@@ -39,8 +46,7 @@ conflict_prefer("mutate", "dplyr")
 conflict_prefer("filter", "dplyr")
 conflict_prefer("summarise", "dplyr")
 
-#####################################################################################
-# Set-up the Directories
+# Set-up the Directories -------------------------------------------------------
 
 ## Set the project directory to the current working directory.
 ## Change the filepath to where the data was downloaded.
@@ -63,8 +69,7 @@ if (!dir.exists(here::here(figDir))){
   print("Figure directory already exists!")
 }
 
-#####################################################################################
-# Download the data
+# Download the data ------------------------------------------------------------
 
 icpsr_download(file_id = c(  7927,  7928,  7929,  7930,
                              7900,  9013,  9045,  8387,  8388, 
@@ -98,8 +103,7 @@ file.remove(file.path(dataDir, to_be_deleted), recursive = TRUE)
 
 remove(to_be_deleted)
 
-#####################################################################################
-# Importing the (Stata) data files
+# Loading the (Stata) data files -----------------------------------------------
 
 form3dta <- list.files(path=dataDir, pattern = ".-0003-Data.dta$|.-0004-Data.dta$", recursive = TRUE) # create a list of Form 3 data files -- different folders based on the year
 form5dta <- list.files(path=dataDir, pattern = ".-0005-Data.dta$|.-0006-Data.dta$", recursive = TRUE) # create a list of Form 5 data files -- different folders based on the year
