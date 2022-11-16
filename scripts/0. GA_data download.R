@@ -25,29 +25,43 @@ pacman::p_load(
   data.table, #
   gtsummary,  # pretty weighted tables
   ggplot2,    # graphing
-  ggtext,     # automatically wraps the text inside figure
-  colorspace) # color palettes   
+  colorspace, # color palettes   
+  conflicted) # choose default packages
 
-
+  
 # https://cran.r-project.org/web/packages/icpsrdata/vignettes/icpsrdata-vignette.html
 library("icpsrdata")
 
-
+# Address any conflicts in the packages
+conflict_scout() # identify the conflicts
+conflict_prefer("here", "here")
+conflict_prefer("mutate", "dplyr")
+conflict_prefer("filter", "dplyr")
+conflict_prefer("summarise", "dplyr")
 
 #####################################################################################
 # Set-up the Directories
-mainDir <- "C:/Users/joanna/Dropbox/Data/" # This should be your master data folder 
-subDir  <- "@Monitoring the Future/icpsr_data" # This will be the name of the folder where we download the MTF data
-dataDir <- file.path(mainDir, subDir)
 
-## This will create a sub-directory folder in the master project directory if doesn't exist
-if (!dir.exists(dataDir)){
-  dir.create(dataDir)
+## Set the project directory to the current working directory.
+## Change the filepath to where the data was downloaded.
+projDir <- here::here()                                     # File path to this project's directory
+dataDir <- "./../../Data/@Monitoring the Future/icpsr_data" # File path to where data will be downloaded
+outDir  <- "output"                                         # Name of the sub-folder where we will save results
+figDir  <- file.path(outDir, "figs")                        # Name of the sub-folder where we will save generated figures
+
+
+## This will create sub-directory folders in the master project directory if doesn't exist
+if (!dir.exists(here::here(outDir))){
+  dir.create(outDir)
 } else {
-  print("Data directory already exists!")
+  print("Output directory already exists!")
 }
 
-setwd(file.path(mainDir, subDir)) # Set the working-directory to the sub-folder where we will download the data
+if (!dir.exists(here::here(figDir))){
+  dir.create(figDir)
+} else {
+  print("Figure directory already exists!")
+}
 
 #####################################################################################
 # Download the data
@@ -60,38 +74,38 @@ icpsr_download(file_id = c(  7927,  7928,  7929,  7930,
                              3184,  3425,  3753,  4019,  4264,
                              4536, 20022, 22480, 25382, 28401,
                             30985, 34409, 34861, 35218, 36263,
-                            36408, 36798, 37182, 37416, 38503))
+                            36408, 36798, 37182, 37416, 38503),
+               download_dir = dataDir)
 
 # To download one survey year at a time (for yearly updates):
   # icpsr_download(file_id = 37416)
 
 ## Clean up folders -- WARNING -- This code will delete files on your hard-drive. USE WITH CAUTION
 
-### Make sure working directory is the dataDir
-getwd()
-
 ### Delete unused SAS files
-list(list.files(pattern = "\\.sas$", recursive = TRUE)) # Make sure list only includes file in the sub-directory
-do.call(file.remove, list(list.files(pattern = "\\.sas$", recursive = TRUE))) # Delete the files
+to_be_deleted <- dir(path=dataDir, pattern="\\.sas$", recursive = TRUE) # Make sure list only includes file in the sub-directory
+file.remove(file.path(dataDir, to_be_deleted), recursive = TRUE)        # Delete the files
 
-list(list.files(pattern = "\\.xpt$", recursive = TRUE)) # Make sure list only includes file in the sub-directory
-do.call(file.remove, list(list.files(pattern = "\\.xpt$", recursive = TRUE))) # Delete the files
+to_be_deleted <- dir(path=dataDir, pattern="\\.xpt$", recursive = TRUE)
+file.remove(file.path(dataDir, to_be_deleted), recursive = TRUE)
 
 ### Delete unused SPSS files
-list(list.files(pattern = "\\.por$", recursive = TRUE)) # Make sure list only includes file in the sub-directory
-do.call(file.remove, list(list.files(pattern = "\\.por$", recursive = TRUE))) # Delete the files
+to_be_deleted <- dir(path=dataDir, pattern="\\.por$", recursive = TRUE)
+file.remove(file.path(dataDir, to_be_deleted), recursive = TRUE)
 
-list(list.files(pattern = "\\.sps$", recursive = TRUE)) # Make sure list only includes file in the sub-directory
-do.call(file.remove, list(list.files(pattern = "\\.sps$", recursive = TRUE))) # Delete the files
+to_be_deleted <- dir(path=dataDir, pattern="\\.sps$", recursive = TRUE)
+file.remove(file.path(dataDir, to_be_deleted), recursive = TRUE)
+
+remove(to_be_deleted)
 
 #####################################################################################
 # Importing the (Stata) data files
 
-form3dta <- list.files(pattern = ".-0003-Data.dta$|.-0004-Data.dta$", recursive = TRUE) # create a list of Form 3 data files -- different folders based on the year
-form5dta <- list.files(pattern = ".-0005-Data.dta$|.-0006-Data.dta$", recursive = TRUE) # create a list of Form 5 data files -- different folders based on the year
+form3dta <- list.files(path=dataDir, pattern = ".-0003-Data.dta$|.-0004-Data.dta$", recursive = TRUE) # create a list of Form 3 data files -- different folders based on the year
+form5dta <- list.files(path=dataDir, pattern = ".-0005-Data.dta$|.-0006-Data.dta$", recursive = TRUE) # create a list of Form 5 data files -- different folders based on the year
 
-mtf_F3_list <- lapply(form3dta, read.dta) # turn the list into a list of dataframes
-mtf_F5_list <- lapply(form5dta, read.dta) # turn the list into a list of dataframes
+mtf_F3_list <- lapply(file.path(dataDir, form3dta), read.dta) # turn the list into a list of dataframes
+mtf_F5_list <- lapply(file.path(dataDir, form5dta), read.dta) # turn the list into a list of dataframes
 
 mtfF3 <- rbindlist(mtf_F3_list, use.names=TRUE, fill=TRUE) # Convert the list of data frames into one data frame
 mtfF5 <- rbindlist(mtf_F5_list, use.names=TRUE, fill=TRUE) # Convert the list of data frames into one data frame
@@ -106,5 +120,7 @@ mtf_V5 <- subset(mtf_V5, !is.na(V5151))
 
 ## Save the dataframe for easy open in the future
 ### Note: This data is NOT harmonized. Make frequent and judicious referral to the codebooks.
-save(mtf_V3, file="mtf_form3.Rda")
-save(mtf_V5, file="mtf_form5.Rda")
+save(mtf_V3, file=file.path(dataDir, "mtf_form3.Rda"))
+save(mtf_V5, file=file.path(dataDir, "mtf_form5.Rda"))
+
+message("End of GA_00_setup and packages") # Marks end of R Script
