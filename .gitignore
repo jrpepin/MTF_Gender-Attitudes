@@ -1,0 +1,6 @@
+*.dta
+*.dat
+*.gz
+*.Rhistory
+data/
+.Rproj.user
