@@ -1,35 +1,53 @@
-#####################################################################################
-# Set-up the environment
+#-------------------------------------------------------------------------------
+# GENDER ATTITUDES PROJECT
+# GA_01_measures and sample.R
+# Joanna R. Pepin
+#-------------------------------------------------------------------------------
 
-## Set-up the Directories
-mainDir <- "C:/Users/Joanna/Dropbox/Data/" # This should be your master data folder 
-subDir  <- "@Monitoring the Future/icpsr_data" # This will be the name of the folder where you saved the MTF data
-dataDir <- file.path(mainDir, subDir)
+# Project Environment ----------------------------------------------------------
+## If not starting from GA_00: setup the repository environment.
+## If starting from GA_00: skip this section.
 
-repoDir <- "C:/Users/Joanna/Dropbox/Repositories/MTF_Gender-Attitudes" # This should be your master project folder (Project GitRepository)
-outDir  <- "data" # This will be the name of the folder where data output goes
-projDir <- file.path(repoDir, outDir)
+## Load the packages
+library("pacman")                  # Load pacman package
 
-## This will create sub-directory folders in the master project directory if doesn't exist
-if (!dir.exists(projDir)){
-  dir.create(projDir)
-} else {
-  print("data directory already exists!")
-}
+pacman::p_load(
+  here,       # relative file paths
+  foreign,    # read data
+  plyr,       #
+  dplyr,      # variable processing
+  tidyr,      # reshaping data
+  forcats,    # reverse factor variables
+  srvyr,      # calc % with survey weights
+  MESS,       # round prop & preserve sum to 100%
+  data.table, #
+  gtsummary,  # pretty weighted tables
+  ggplot2,    # graphing
+  colorspace, # color palettes   
+  conflicted) # choose default packages
 
-## Figure out how to add figures folder to repoDir automatically
+## Address any conflicts in the packages
+conflict_scout() # identify the conflicts
+conflict_prefer("here", "here")
+conflict_prefer("mutate", "dplyr")
+conflict_prefer("filter", "dplyr")
+conflict_prefer("summarise", "dplyr")
+conflict_prefer("arrange", "dplyr")
 
-setwd(repoDir) # This will set the working directory to the master project folder
 
-## Open the data
+## Specify the file paths
+projDir <- here::here()                                     # File path to this project's directory
+dataDir <- "./../../Data/@Monitoring the Future/icpsr_data" # File path to where data will be downloaded
+outDir  <- "output"                                         # Name of the sub-folder where we will save results
+figDir  <- file.path(outDir, "figs")                        # Name of the sub-folder where we will save generated figures
+
 load(paste0(dataDir, "/mtf_form3.Rda"))
 load(paste0(dataDir, "/mtf_form5.Rda"))
 
-## Load the libraries
-library(haven)
-library(tidyverse)
 
-# Create crosswalk of survey year and ICPSR Study ID 
+# VARIABLES --------------------------------------------------------------------
+
+## Create crosswalk of survey year and ICPSR Study ID 
 studyid    <- c(7927,  7928,  7929,  7930,
                 7900,  9013,  9045,  8387,   8388,
                 8546,  8701,  9079,  9259,   9397,
@@ -38,7 +56,8 @@ studyid    <- c(7927,  7928,  7929,  7930,
                 3184,  3425,  3753,  4019,   4264,
                 4536, 20022, 22480,  25382, 28401,
                 30985, 34409, 34861, 35218, 36263,
-                36408, 36798, 37182, 37416)
+                36408, 36798, 37182, 37416, 37841,
+                38156, 38503)
 
 surveyyear <- c(1976, 1977, 1978, 1979,
                 1980, 1981, 1982, 1983, 1984,
@@ -48,7 +67,8 @@ surveyyear <- c(1976, 1977, 1978, 1979,
                 2000, 2001, 2002, 2003, 2004,
                 2005, 2006, 2007, 2008, 2009,
                 2010, 2011, 2012, 2013, 2014,
-                2015, 2016, 2017, 2018)
+                2015, 2016, 2017, 2018, 2019,
+                2020, 2021)
 
 Xwalk <- data.frame(surveyyear, studyid)
 #####################################################################################
@@ -113,7 +133,8 @@ data <- data %>%
 
 ## Gender attitudes
 ### "home", "hdecide", "suffer", "warm", "lead", "jobopp"
-  ### MTF did not include the "suffer" and "warm" items in 2018.
+  ### MTF did not include the "suffer" and "warm" items starting in 2018.
+  ### MTF did not include "home", "jobopp", or "lead" items in 2021.
 
 data <- data %>%
   mutate(
@@ -187,13 +208,13 @@ data <- data %>%
       jobopp == "MOSTLY AGREE"     | jobopp == "AGREE"                            ~ "Agree",         # Feminist
       TRUE                                                                        ~  NA_character_ ))
 
-data$home    <- factor(data$home,    levels = c("Agree","Disagree"), ordered = TRUE) 
-data$hdecide <- factor(data$hdecide, levels = c("Agree","Disagree"), ordered = TRUE) 
-data$suffer  <- factor(data$suffer,  levels = c("Agree","Disagree"), ordered = TRUE) 
+data$home    <- factor(data$home,    levels = c("Agree","Disagree"), ordered = FALSE) 
+data$hdecide <- factor(data$hdecide, levels = c("Agree","Disagree"), ordered = FALSE) 
+data$suffer  <- factor(data$suffer,  levels = c("Agree","Disagree"), ordered = FALSE) 
 
-data$warm    <- factor(data$warm,    levels = c("Disagree","Agree"), ordered = TRUE) 
-data$lead    <- factor(data$lead,    levels = c("Disagree","Agree"), ordered = TRUE) 
-data$jobopp  <- factor(data$jobopp,  levels = c("Disagree","Agree"), ordered = TRUE)
+data$warm    <- factor(data$warm,    levels = c("Disagree","Agree"), ordered = FALSE) 
+data$lead    <- factor(data$lead,    levels = c("Disagree","Agree"), ordered = FALSE) 
+data$jobopp  <- factor(data$jobopp,  levels = c("Disagree","Agree"), ordered = FALSE)
 
 ## Race
 table(data$year, data$raceeth)
@@ -210,8 +231,8 @@ data <- data %>%
       (year >= 1999 & year <= 2004)     & raceeth == 6   ~ "Black",
       (year >= 2005 & year <= 2009)     & raceeth == 9   ~ "White",
       (year >= 2005 & year <= 2009)     & raceeth == 8   ~ "Black",
-      (year >= 2010 & year <= 2018)     & raceeth == 15  ~ "White",
-      (year >= 2010 & year <= 2018)     & raceeth == 14  ~ "Black",      
+      (year >= 2010 & year <= 2021)     & raceeth == 15  ~ "White",
+      (year >= 2010 & year <= 2021)     & raceeth == 14  ~ "Black",      
       TRUE                                               ~  NA_character_ ))
 
 
@@ -236,7 +257,7 @@ data <- data %>%
       TRUE                                ~  NA_character_))
 
 data$racesex <- as_factor(data$racesex)
-data$racesex <- factor(data$racesex, levels = c("White men", "White women", "Black men", "Black women"), ordered = TRUE)
+data$racesex <- factor(data$racesex, levels = c("White men", "White women", "Black men", "Black women"), ordered = FALSE)
 
 ## Mothers' Education
 table(data$year, data$momed)
@@ -259,7 +280,7 @@ data$momed[data$momed == "SOME HIGH SCHOOL"]                               <- "L
 data$momed[data$momed == "GRADUATE OR PROFESSIONAL SCHOOL AFTER COLLEGE"]  <- "COMPLETED COLLEGE"
 
 data$momed <- factor(data$momed, levels = c("LESS THAN HIGH SCHOOL", "COMPLETED HIGH SCHOOL", "SOME COLLEGE", 
-                                            "COMPLETED COLLEGE"), ordered = TRUE)
+                                            "COMPLETED COLLEGE"), ordered = FALSE)
 
 
 ## Mothers' Employment
@@ -275,7 +296,7 @@ data <- data %>%
       TRUE        ~  NA_character_ ))
 
 data$momemp <- factor(data$momemp, levels = c("NO, NOT EMPLOYED", "YES, SOME OF THE TIME WHEN I WAS GROWING UP", 
-                                              "YES, MOST OF THE TIME", "YES, ALL OR NEARLY ALL OF THE TIME"), ordered = TRUE)
+                                              "YES, MOST OF THE TIME", "YES, ALL OR NEARLY ALL OF THE TIME"), ordered = FALSE)
 
 ## Parental Residence (Family Structure)
 
@@ -293,21 +314,26 @@ data <- data %>%
       TRUE        ~  NA_character_ ))
 
 data$religion <- factor(data$religion, levels = c("NEVER", "RARELY", 
-                                                  "ONCE OR TWICE A MONTH", "ABOUT ONCE A WEEK OR MORE"), ordered = TRUE)
+                                                  "ONCE OR TWICE A MONTH", "ABOUT ONCE A WEEK OR MORE"), ordered = FALSE)
 
-#####################################################################################
+################################################################################
 # Select Sample
+
 data <- select(data, weight, year, home, hdecide, suffer, warm, lead, jobopp, 
                racesex, race, gender, momed, momemp, religion)
-## Missing
-mtf7617 <- subset(data, ((!is.na(home) & !is.na(suffer) & !is.na(warm) & !is.na(lead) & !is.na(jobopp)) | !is.na(hdecide)) & year!= 2018)
-mtf18 <- subset(data, ((!is.na(home) & !is.na(lead) & !is.na(jobopp)) | !is.na(hdecide)) & year== 2018)
 
-data <- rbind(mtf7617, mtf18)
+## Missing
+mtf7617 <- subset(data, ((!is.na(home) & !is.na(suffer) & !is.na(warm) & !is.na(lead) & !is.na(jobopp)) | !is.na(hdecide)) & year< 2018)
+mtf1820 <- subset(data, ((!is.na(home) & !is.na(lead) & !is.na(jobopp)) | !is.na(hdecide)) & year>= 2018 & year < 2021)
+mtf21   <- subset(data, (!is.na(hdecide) & year== 2021))
+
+data <- rbind(mtf7617, mtf1820)
+data <- rbind(data, mtf21)
 
 data <- subset(data, (!is.na(racesex) & !is.na(momed) & !is.na(momemp) & !is.na(religion)))
 
-data <- data %>% arrange(desc(year))
+data <- data %>% 
+  arrange(desc(year))
 
 # Clean up environment
-remove(mtf_V3, mtf_V5, mtf7617, mtf18)
+remove(mtf_V3, mtf_V5, mtf7617, mtf1820, mtf21)

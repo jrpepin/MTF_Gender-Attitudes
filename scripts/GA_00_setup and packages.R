@@ -45,11 +45,11 @@ conflict_prefer("here", "here")
 conflict_prefer("mutate", "dplyr")
 conflict_prefer("filter", "dplyr")
 conflict_prefer("summarise", "dplyr")
+conflict_prefer("arrange", "dplyr")
 
 # Set-up the Directories -------------------------------------------------------
 
 ## Set the project directory to the current working directory.
-## Change the filepath to where the data was downloaded.
 projDir <- here::here()                                     # File path to this project's directory
 dataDir <- "./../../Data/@Monitoring the Future/icpsr_data" # File path to where data will be downloaded
 outDir  <- "output"                                         # Name of the sub-folder where we will save results
@@ -79,7 +79,8 @@ icpsr_download(file_id = c(  7927,  7928,  7929,  7930,
                              3184,  3425,  3753,  4019,  4264,
                              4536, 20022, 22480, 25382, 28401,
                             30985, 34409, 34861, 35218, 36263,
-                            36408, 36798, 37182, 37416, 38503),
+                            36408, 36798, 37182, 37416, 37841,
+                            38156, 38503),
                download_dir = dataDir)
 
 # To download one survey year at a time (for yearly updates):
@@ -88,7 +89,7 @@ icpsr_download(file_id = c(  7927,  7928,  7929,  7930,
 ## Clean up folders -- WARNING -- This code will delete files on your hard-drive. USE WITH CAUTION
 
 ### Delete unused SAS files
-to_be_deleted <- dir(path=dataDir, pattern="\\.sas$", recursive = TRUE) # Make sure list only includes file in the sub-directory
+to_be_deleted <- dir(path=dataDir, pattern="\\.sas$", recursive = TRUE) # Make sure list only includes files in the sub-directory
 file.remove(file.path(dataDir, to_be_deleted), recursive = TRUE)        # Delete the files
 
 to_be_deleted <- dir(path=dataDir, pattern="\\.xpt$", recursive = TRUE)
