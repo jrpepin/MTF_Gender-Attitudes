@@ -28,6 +28,7 @@ pacman::p_load(
   tidyr,      # reshaping data
   forcats,    # reverse factor variables
   srvyr,      # calc % with survey weights
+  purrr,      # to use modify_at
   MESS,       # round prop & preserve sum to 100%
   data.table, #
   gtsummary,  # pretty weighted tables
@@ -44,7 +45,7 @@ conflict_scout() # identify the conflicts
 conflict_prefer("here", "here")
 conflict_prefer("mutate", "dplyr")
 conflict_prefer("filter", "dplyr")
-conflict_prefer("summarise", "dplyr")
+conflict_prefer("summarize", "dplyr")
 conflict_prefer("arrange", "dplyr")
 
 # Set-up the Directories -------------------------------------------------------
