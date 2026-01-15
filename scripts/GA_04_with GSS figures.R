@@ -1,5 +1,40 @@
 ## GSS & MTF -- SLIDES
 
+## Load the packages
+library("pacman")                  # Load pacman package
+
+pacman::p_load(
+  here,       # relative file paths
+  foreign,    # read data
+  plyr,       #
+  dplyr,      # variable processing
+  tidyr,      # reshaping data
+  forcats,    # reverse factor variables
+  srvyr,      # calc % with survey weights
+  purrr,      # to use modify_at
+  MESS,       # round prop & preserve sum to 100%
+  data.table, #
+  gtsummary,  # pretty weighted tables
+  ggplot2,    # graphing
+  colorspace, # color palettes   
+  conflicted) # choose default packages
+
+## Address any conflicts in the packages
+conflict_scout() # identify the conflicts
+conflict_prefer("here", "here")
+conflict_prefer("mutate", "dplyr")
+conflict_prefer("filter", "dplyr")
+conflict_prefer("summarize", "dplyr")
+conflict_prefer("arrange", "dplyr")
+
+
+## Specify the file paths
+projDir <- here::here()                                     # File path to this project's directory
+dataDir <- "./../../Data/@Monitoring the Future/icpsr_data" # File path to where data will be downloaded
+outDir  <- "output"                                         # Name of the sub-folder where we will save results
+figDir  <- file.path(outDir, "figs")                        # Name of the sub-folder where we will save generated figures
+
+
 ### Load the data
 gssdata <- readRDS("C:/Users/Joanna/Dropbox/Repositories/GSS_Gender-Attitudes/output/gss_ga.rds")
 mtfdata <- readRDS("C:/Users/Joanna/Dropbox/Repositories/MTF_Gender-Attitudes/output/mtf_ga.rds")
@@ -68,7 +103,7 @@ pubGSS <- ggplot(subset(alldata, sphere == "Public" & val == "Feminist" & source
 
 pubGSS
 
-ggsave("figures/gss&mtf_pubGSS.png", pubGSS, width = 15, height = 8, dpi = 300)
+ggsave("gss&mtf_pubGSS.png", path = figDir, pubGSS, width = 15, height = 8, dpi = 300, bg = 'white')
 
 
 pub <- ggplot(subset(alldata, sphere == "Public" & val == "Feminist"),
@@ -78,7 +113,7 @@ pub <- ggplot(subset(alldata, sphere == "Public" & val == "Feminist"),
   geom_line(size = 2) +
   geom_point(size = 4) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.2, 1)) +
-  scale_x_continuous(breaks = c(1977, 1996, 2021), label = c("'77", "'96", "'21")) +
+  scale_x_continuous(breaks = c(1977, 1996, 2024), label = c("'77", "'96", "'24")) +
   scale_colour_manual(name="",
                       breaks=c("lead", "jobopp", "fepol"),
                       labels=c("Agree women should be considered as seriously \nas men for jobs as executives or politicians (MTF)",
@@ -104,7 +139,8 @@ pub <- ggplot(subset(alldata, sphere == "Public" & val == "Feminist"),
 
 pub
 
-ggsave("gss&mtf_pub.png",  path = figDir, pub,width = base * 2, height = base, unit = "in", dpi = 300)
+ggsave("gss&mtf_pub.png", path = figDir, pub, width = base * 2, height = base, unit = "in", dpi = 300, bg = 'white')
+
 
 ###################################
 ## GSS & MTF EMPLOYED MOTHERS
@@ -115,7 +151,7 @@ empGSS <- ggplot(subset(alldata, sphere == "Employed Mothers" & val == "Feminist
   geom_line(size = 2) +
   geom_point(size = 4) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.2, 1)) +
-  scale_x_continuous(breaks = c(1977, 1996, 2021), label = c("'77", "'96", "'21")) +
+  scale_x_continuous(breaks = c(1977, 1996, 2024), label = c("'77", "'96", "'24")) +
   scale_colour_manual(name="",
                       breaks=c("warm", "suffer", "fechld", "fepresch"),
                       labels=c("Agree a working mother can have warm \nrelationship with her kids (MTF)",
@@ -143,7 +179,8 @@ empGSS <- ggplot(subset(alldata, sphere == "Employed Mothers" & val == "Feminist
 
 empGSS
 
-ggsave("figures/gss&mtf_empGSS.png", empGSS, width = 15, height = 8, dpi = 300)
+ggsave("gss&mtf_empGSS.png", path = figDir, empGSS, width = 15, height = 8, unit = "in", dpi = 300, bg = 'white')
+
 
 emp <- ggplot(subset(alldata, sphere == "Employed Mothers" & val == "Feminist"),
               aes(x = year, y = prop,
@@ -152,7 +189,7 @@ emp <- ggplot(subset(alldata, sphere == "Employed Mothers" & val == "Feminist"),
   geom_line(size = 2) +
   geom_point(size = 4) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.2, 1)) +
-  scale_x_continuous(breaks = c(1977, 1996, 2021), label = c("'77", "'96", "'21")) +
+  scale_x_continuous(breaks = c(1977, 1996, 2024), label = c("'77", "'96", "'24")) +
   scale_colour_manual(name="",
                       breaks=c("warm", "suffer", "fechld", "fepresch"),
                       labels=c("Agree a working mother can have warm \nrelationship with her kids (MTF)",
@@ -180,7 +217,7 @@ emp <- ggplot(subset(alldata, sphere == "Employed Mothers" & val == "Feminist"),
 
 emp
 
-ggsave("gss&mtf_emp.png", path = figDir, emp, width = base * 2, height = base, unit = "in", dpi = 300)
+ggsave("gss&mtf_emp.png", path = figDir, emp, width = base * 2, height = base, unit = "in", dpi = 300, bg = 'white')
 
 
 ###################################
@@ -218,7 +255,8 @@ famGSS <- ggplot(subset(alldata, sphere == "Family" & val == "Feminist" & source
 
 famGSS
 
-ggsave("figures/gss&mtf_famGSS.png", famGSS, width = 15, height = 8, dpi = 300)
+ggsave("gss&mtf_famGSS.png", path = figDir, famGSS, width = 15, height = 8, unit = "in", dpi = 300, bg = 'white')
+
 
 fam <- ggplot(subset(alldata, sphere == "Family" & val == "Feminist"),
               aes(x = year, y = prop,
@@ -227,7 +265,7 @@ fam <- ggplot(subset(alldata, sphere == "Family" & val == "Feminist"),
   geom_line(size = 2) +
   geom_point(size = 4) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.2, 1)) +
-  scale_x_continuous(breaks = c(1977, 1996, 2021), label = c("'77", "'96", "'21")) +
+  scale_x_continuous(breaks = c(1977, 1996, 2024), label = c("'77", "'96", "'24")) +
   scale_colour_manual(name="",
                       breaks=c("home", "hdecide", "fefam"),
                       labels=c("Disagree woman takes care of home (MTF)",
@@ -252,5 +290,5 @@ fam <- ggplot(subset(alldata, sphere == "Family" & val == "Feminist"),
 
 fam 
 
-ggsave("gss&mtf_fam.png", path = figDir, fam, width = base * 2, height = base, unit = "in", dpi = 300)
+ggsave("gss&mtf_fam.png", path = figDir, fam, width = base * 2, height = base, unit = "in", dpi = 300, bg = 'white')
 
