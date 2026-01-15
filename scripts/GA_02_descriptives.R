@@ -6,7 +6,7 @@
 
 # Set-up data ------------------------------------------------------------------
 
-figdata <- data %>%
+figdata <- data |>
   mutate(
     home = case_when(
       home     == "Disagree"     ~ "Feminist",
@@ -35,15 +35,18 @@ figdata <- data %>%
 
 cat_vars <- c( "home", "hdecide", "suffer", "warm", "lead", "jobopp")
 
-figdata <- figdata %>%
+figdata <- figdata |>
   modify_at(cat_vars, as.factor)
 
-figdata <- figdata %>% 
-  gather(variable, val, -year, -racesex, - race, -gender, -momed, -momemp, -religion, -weight) %>%
-  drop_na()
+figdata <- figdata |> 
+  pivot_longer( cols = -c(year, racesex, race, gender, momed, momemp, religion, weight), 
+                names_to = "variable", 
+                values_to = "val", 
+                values_transform = list(val = as.character) ) |> 
+  drop_na(val)
 
 ## Create a grouping variable
-figdata <- figdata %>%
+figdata <- figdata |>
   mutate(
     sphere = case_when(
       variable == "home"      ~ "Family",
@@ -59,7 +62,7 @@ figdata$sphere <- factor(figdata$sphere,
                          levels = c("Public", "Employed Mothers", "Family"), 
                          ordered = FALSE)
 
-figdata_svy <- figdata %>%
+figdata_svy <- figdata |>
   as_survey_design(id = NULL,
                    weights = weight)
 
@@ -67,20 +70,22 @@ figdata_svy <- figdata %>%
 # Figure 1. Young Adults' Gender Attitudes 
 
 ## Averages
-fig1d <- figdata_svy %>%
-  group_by(year, sphere, variable, val) %>%
+fig1d <- figdata_svy |>
+  group_by(year, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
 write.csv(fig1d, file = file.path(outDir, "dol_Figure 1.csv"))
+saveRDS(fig1d, file.path(outDir,"mtf_ga.rds"))
+
 
 ## Figure 1
-fig1 <- fig1d %>%
-  filter(val == "Feminist") %>%
+fig1 <- fig1d |>
+  filter(val == "Feminist") |>
   ggplot(aes(x = year, y = prop,
              ymin = prop_low, ymax = prop_upp,
              color = variable, group = variable, fill = variable)) +
   facet_wrap( ~ sphere) +
-  geom_line(size = .9) +
+  geom_line(linewidth = .9) +
   geom_ribbon(alpha = 0.1, color = NA) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(.2, 1)) +
   scale_x_continuous(breaks = c(1976, 1996, 2020), label = c("'76", "'96", "'20")) +
@@ -104,8 +109,7 @@ fig1 <- fig1d %>%
         panel.grid.minor.x = element_blank(),
         panel.grid.minor.y = element_blank()) +
   ggtitle("Trends in Young People's Attitudes About Gender") +
-  labs(caption = "Data source: Monitoring the Future Surveys
-       ")
+  labs(caption = "Joanna R. Pepin \nData source: Monitoring the Future Surveys")
 
 fig1
 
@@ -115,8 +119,8 @@ ggsave("fig1.png", path = figDir, fig1, width = 9, height = 6, dpi = 300, bg = '
 # Figure 2. Young Adults' Gender Attitudes -- by gender
 
 ## Averages
-fig2d <- figdata_svy %>%
-  group_by(year, gender, sphere, variable, val) %>%
+fig2d <- figdata_svy |>
+  group_by(year, gender, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
 write.csv(fig2d, file = file.path(outDir, "dol_Figure 2.csv"))
@@ -125,8 +129,8 @@ write.csv(fig2d, file = file.path(outDir, "dol_Figure 2.csv"))
 ## Figure 2
 fam_names <- c("hdecide" = "Disagree husband makes all family decisions", "home" = "Disagree woman takes care of home")
 
-fig2 <- fig2d %>%
-  filter(val == "Feminist" & sphere == "Family") %>%
+fig2 <- fig2d |>
+  filter(val == "Feminist" & sphere == "Family") |>
   ggplot(aes(x = year, y = prop,
              ymin = prop_low, ymax = prop_upp,
              color = gender, group = gender, shape = gender)) +
@@ -163,27 +167,28 @@ ggsave("fig2.png", path = figDir, fig2, width = 6, height = 6, dpi = 300, bg = '
 # Figure 3. Young Adults' Gender Attitudes -- by moms' employment
 
 ## Averages
-fig3a <- figdata_svy %>%
-  filter(sphere != "Employed Mothers") %>%
-  group_by(year, momemp, sphere, variable, val) %>%
+fig3a <- figdata_svy |>
+  filter(sphere != "Employed Mothers") |>
+  group_by(year, momemp, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
-fig3b <- figdata_svy %>%
-  filter(sphere == "Employed Mothers" & year <= 2017) %>%
-  group_by(year, momemp, sphere, variable, val) %>%
+fig3b <- figdata_svy |>
+  filter(sphere == "Employed Mothers" & year <= 2017) |>
+  group_by(year, momemp, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
 fig3d <- rbind(fig3a, fig3b)
 remove(fig3a, fig3b)
 
-write.csv(fig3d, "data/dol_Figure 3.csv")
+write.csv(fig3d, file = file.path(outDir, "dol_Figure 3.csv"))
+
 
 ## Figure 3
 fam_names <- c("hdecide" = "Disagree husband makes all family decisions", "home" = "Disagree woman takes care of home")
 
 fig3 <- ggplot(subset(fig3d, val == "Feminist" & sphere == "Family"),
                aes(x = year, y = prop,
-                   ymin = prop_low, ymax = prop_upp,
+ #                  ymin = prop_low, ymax = prop_upp,
                    color = momemp, group = momemp)) +
   facet_wrap( ~ variable, labeller = as_labeller(fam_names)) +
   geom_point(alpha = .3) +
@@ -194,7 +199,7 @@ fig3 <- ggplot(subset(fig3d, val == "Feminist" & sphere == "Family"),
                       labels=c("Not employed", "Sometimes employed", "Mostly employed", "Employed"),
                       values=c("#7b3294", "#c2a5cf", "#a6dba0", "#008837")) +
   ggtitle("Young People's Attitudes About Gender in Families \nBy Moms' Employment Status while Growing-up") +
-  labs(caption = "Pepin & Cotter \nData source: Monitoring the Future Surveys") +
+  labs(caption = "Joanna R. Pepin \nData source: Monitoring the Future Surveys") +
   theme_minimal() +
   theme(legend.position    = "top", 
         legend.title       = element_blank(),
@@ -208,33 +213,35 @@ fig3 <- ggplot(subset(fig3d, val == "Feminist" & sphere == "Family"),
 
 fig3
 
-ggsave("figures/fig3.png", fig3, width = 8, height = 5, dpi = 300)
+ggsave("fig3.png", path = figDir, fig3, width = 8, height = 5, dpi = 300, bg = 'white')
+
 
 #####################################################################################
 # Figure 4. Young Adults' Gender Attitudes -- by moms' education
 
 ## Averages
-fig4a <- figdata_svy %>%
-  filter(sphere != "Employed Mothers") %>%
-  group_by(year, momed, sphere, variable, val) %>%
+fig4a <- figdata_svy |>
+  filter(sphere != "Employed Mothers") |>
+  group_by(year, momed, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
-fig4b <- figdata_svy %>%
-  filter(sphere == "Employed Mothers" & year <= 2017) %>%
-  group_by(year, momed, sphere, variable, val) %>%
+fig4b <- figdata_svy |>
+  filter(sphere == "Employed Mothers" & year <= 2017) |>
+  group_by(year, momed, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
 fig4d <- rbind(fig4a, fig4b)
 remove(fig4a, fig4b)
 
-write.csv(fig4d, "data/dol_Figure 4.csv")
+write.csv(fig4d, file = file.path(outDir, "dol_Figure 4.csv"))
+
 
 ## Figure 4
 fam_names <- c("hdecide" = "Disagree husband makes all family decisions", "home" = "Disagree woman takes care of home")
 
 fig4 <- ggplot(subset(fig4d, val == "Feminist" & sphere == "Family"),
                aes(x = year, y = prop,
-                   ymin = prop_low, ymax = prop_upp,
+#                   ymin = prop_low, ymax = prop_upp,
                    color = momed, group = momed)) +
   facet_wrap( ~ variable, labeller = as_labeller(fam_names)) +
   geom_point(alpha = .3) +
@@ -245,7 +252,7 @@ fig4 <- ggplot(subset(fig4d, val == "Feminist" & sphere == "Family"),
                       labels=c("< High School", "High School", "Some College", "College", "College +"),
                       values=c("#5f1560", "#ab4ebf", "#f6ce28", "#6b8550")) +
   ggtitle("Young People's Attitudes About Gender in Families \nBy Moms' Education") +
-  labs(caption = "Pepin & Cotter \nData source: Monitoring the Future Surveys") +
+  labs(caption = "Joanna R. Pepin \nData source: Monitoring the Future Surveys") +
   theme_minimal() +
   theme(legend.position    = "top", 
         legend.title       = element_blank(),
@@ -259,26 +266,28 @@ fig4 <- ggplot(subset(fig4d, val == "Feminist" & sphere == "Family"),
 
 fig4
 
-ggsave("figures/fig4.png", fig4, width = 8, height = 5, dpi = 300)
+ggsave("fig4.png", path = figDir, fig4, width = 8, height = 5, dpi = 300, bg = 'white')
+
 
 #####################################################################################
 # Figure 5. Young Adults' Gender Attitudes -- by race
 
 ## Averages
-fig5a <- figdata_svy %>%
-  filter(sphere != "Employed Mothers") %>%
-  group_by(year, race, sphere, variable, val) %>%
+fig5a <- figdata_svy |>
+  filter(sphere != "Employed Mothers") |>
+  group_by(year, race, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
-fig5b <- figdata_svy %>%
-  filter(sphere == "Employed Mothers" & year <= 2017) %>%
-  group_by(year, race, sphere, variable, val) %>%
+fig5b <- figdata_svy |>
+  filter(sphere == "Employed Mothers" & year <= 2017) |>
+  group_by(year, race, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
 fig5d <- rbind(fig5a, fig5b)
 remove(fig5a, fig5b)
 
-write.csv(fig5d, "data/dol_Figure 5.csv")
+write.csv(fig5d, file = file.path(outDir, "dol_Figure 5.csv"))
+
 
 ## Figure 5
 fam_names <- c("hdecide" = "Disagree husband makes all family decisions", "home" = "Disagree woman takes care of home")
@@ -296,7 +305,7 @@ fig5 <- ggplot(subset(fig5d, val == "Feminist" & sphere == "Family"),
                       labels=c("Black", "White"),
                       values=c("#5D478B", "#CD661D")) +
   ggtitle("Racial Differences in Young People's Attitudes About Gender in Families") +
-  labs(caption = "Pepin & Cotter \nData source: Monitoring the Future Surveys") +
+  labs(caption = "Joanna R. Pepin \nData source: Monitoring the Future Surveys") +
   theme_minimal() +
   theme(legend.position    = "top", 
         legend.title       = element_blank(),
@@ -310,26 +319,27 @@ fig5 <- ggplot(subset(fig5d, val == "Feminist" & sphere == "Family"),
 
 fig5
 
-ggsave("figures/fig5.png", fig5, width = 8, height = 5, dpi = 300)
+ggsave("fig5.png", path = figDir, fig5, width = 8, height = 5, dpi = 300, bg = 'white')
 
 #####################################################################################
 # Figure 6. Young Adults' Gender Attitudes -- by religiosity
 
 ## Averages
-fig6a <- figdata_svy %>%
-  filter(sphere != "Employed Mothers") %>%
-  group_by(year, religion, sphere, variable, val) %>%
+fig6a <- figdata_svy |>
+  filter(sphere != "Employed Mothers") |>
+  group_by(year, religion, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
-fig6b <- figdata_svy %>%
-  filter(sphere == "Employed Mothers" & year <= 2017) %>%
-  group_by(year, religion, sphere, variable, val) %>%
+fig6b <- figdata_svy |>
+  filter(sphere == "Employed Mothers" & year <= 2017) |>
+  group_by(year, religion, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
 fig6d <- rbind(fig6a, fig6b)
 remove(fig6a, fig6b)
 
-write.csv(fig6d, "data/dol_Figure 6.csv")
+write.csv(fig6d, file = file.path(outDir, "dol_Figure 6.csv"))
+
 
 ## Figure 6
 fam_names <- c("hdecide" = "Disagree husband makes all family decisions", "home" = "Disagree woman takes care of home")
@@ -347,7 +357,7 @@ fig6 <- ggplot(subset(fig6d, val == "Feminist" & sphere == "Family"),
                       labels=c("Never", "Rarely", "Monthly", "Weekly"),
                       values=c("#1b9e77", "#d95f02", "#7570b3", "#e7298a")) +
   ggtitle("Young People's Attitudes About Gender in Families \nBy Religious Service Attendance") +
-  labs(caption = "Pepin & Cotter \nData source: Monitoring the Future Surveys") +
+  labs(caption = "Joanna R. Pepin \nData source: Monitoring the Future Surveys") +
   theme_minimal() +
   theme(legend.position    = "top", 
         legend.title       = element_blank(),
@@ -361,4 +371,4 @@ fig6 <- ggplot(subset(fig6d, val == "Feminist" & sphere == "Family"),
 
 fig6
 
-ggsave("figures/fig6.png", fig6, width = 8, height = 5, dpi = 300)
+ggsave("fig6.png", path = figDir, fig6, width = 8, height = 5, dpi = 300, bg = 'white')

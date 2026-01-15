@@ -127,7 +127,7 @@ data$year <- as.character(data$year) |>
 table(data$year, !is.na(data$wt7611))
 table(data$year, !is.na(data$wt1217))
 
-data <- data %>%
+data <- data |>
   mutate(
     weight = case_when(
       year  <= 2011 ~ wt7611,
@@ -135,10 +135,28 @@ data <- data %>%
 
 ## Gender attitudes
 ### "home", "hdecide", "suffer", "warm", "lead", "jobopp"
-  ### MTF did not include the "suffer" and "warm" items starting in 2018.
-  ### MTF did not include "home", "jobopp", or "lead" items in 2021.
 
-data <- data %>%
+data |> 
+  pivot_longer( 
+    cols = c(home, hdecide, suffer, warm, lead, jobopp), 
+    names_to = "variable", 
+    values_to = "value" ) |>  
+  mutate(collected = !is.na(value)) |>  # TRUE if variable has data 
+  group_by(year, variable) |>  
+  dplyr::summarise(collected = any(collected), .groups = "drop") |> 
+  pivot_wider( 
+    names_from = variable, 
+    values_from = collected, 
+    values_fill = FALSE ) |>  
+  arrange(year) |>
+  print(n = 50)
+
+### MTF did not include the "suffer" and "warm" items starting in 2018.
+### MTF did not include "home", "jobopp", or "lead" items in 2021.
+### MTF did not include "hdecide" item in 2022.
+
+
+data <- data |>
   mutate(
     home = case_when(
       home == "1" | home == "DISAGREE" | home == "DISAGREE:(1)" | home == "Disagree"                     ~ "DISAGREE",
@@ -183,7 +201,7 @@ data <- data %>%
       jobopp == "5" | jobopp == "AGREE"    | jobopp == "AGREE:(5)"    | jobopp == "Agree"                ~ "AGREE",
       TRUE                                                                                               ~  NA_character_ ))
 
-data <- data %>%
+data <- data |>
   mutate(
     home = case_when(
       home == "MOSTLY DISAGREE"    | home == "DISAGREE"                           ~ "Disagree",      # Feminist
@@ -222,7 +240,7 @@ data$jobopp  <- factor(data$jobopp,  levels = c("Disagree","Agree"), ordered = F
 table(data$year, data$raceeth)
 data$raceeth <- as.integer(data$raceeth)
 
-data <- data %>%
+data <- data |>
   mutate(
     race = case_when(
       (year <= 1998 & year != 1993)     & raceeth == 2   ~ "White",
@@ -241,7 +259,7 @@ data <- data %>%
 ## Gender
 table(data$year, data$gender)
 
-data <- data %>%
+data <- data |>
   mutate(
     gender = case_when(
       gender == "1" | gender == "MALE"   | gender == "MALE:(1)"   | gender == "Male"     ~ "Men",
@@ -249,7 +267,7 @@ data <- data %>%
       TRUE                                              ~  NA_character_ ))
 
 ## Create racesex
-data <- data %>%
+data <- data |>
   mutate(
     racesex = case_when(
       race == "White" & gender == "Men"   ~ "White men",
@@ -264,7 +282,7 @@ data$racesex <- factor(data$racesex, levels = c("White men", "White women", "Bla
 ## Mothers' Education
 table(data$year, data$momed)
 
-data <- data %>%
+data <- data |>
   mutate(
     momed = case_when(
       momed == "1" | momed == "GRDE SCH" | momed == "GRDE SCH:(1)" | momed == "Completed grade school or less"     ~ "COMPLETED GRADE SCHOOL OR LESS",
@@ -288,7 +306,7 @@ data$momed <- factor(data$momed, levels = c("LESS THAN HIGH SCHOOL", "COMPLETED 
 ## Mothers' Employment
 table(data$year, data$momemp)
 
-data <- data %>%
+data <- data |>
   mutate(
     momemp = case_when(
       momemp == 1 | momemp == "NO"       | momemp == "NO:(1)"       | momemp == "No"                                                                   ~ "NO, NOT EMPLOYED",
@@ -306,7 +324,7 @@ data$momemp <- factor(data$momemp, levels = c("NO, NOT EMPLOYED", "YES, SOME OF 
 ## Religiosity
 table(data$year, data$religion)
 
-data <- data %>%
+data <- data |>
   mutate(
     religion = case_when(
       religion == 1 | religion == "NEVER"    | religion == "NEVER:(1)"    | religion == "Never"                     ~ "NEVER",
@@ -334,7 +352,7 @@ data <- rbind(data, mtf21)
 
 data <- subset(data, (!is.na(racesex) & !is.na(momed) & !is.na(momemp) & !is.na(religion)))
 
-data <- data %>% 
+data <- data |> 
   arrange(desc(year))
 
 # Clean up environment

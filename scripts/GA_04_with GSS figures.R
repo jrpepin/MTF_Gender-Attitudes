@@ -1,6 +1,9 @@
-## GSS & MTF -- JOB TALK SLIDES
+## GSS & MTF -- SLIDES
 
-gssdata <- read.csv(file="C:/Users/jpepin/Dropbox/Repositories/GSS_Gender-Attitudes/output/gss_ga.csv", header=TRUE, sep=",")
+### Load the data
+gssdata <- readRDS("C:/Users/Joanna/Dropbox/Repositories/GSS_Gender-Attitudes/output/gss_ga.rds")
+mtfdata <- readRDS("C:/Users/Joanna/Dropbox/Repositories/MTF_Gender-Attitudes/output/mtf_ga.rds")
+
 
 #For dynamic font sizing
 base = 6 # set the height of your figure (and font)
@@ -25,7 +28,7 @@ gssdata <- gssdata %>%
 gssdata$val[is.na(gssdata$val)] <- "Conventional"
 gssdata$source <- "GSS"
 
-mtfdata <- fig1d
+#mtfdata <- fig1d
 mtfdata$source <- "MTF"
 
 alldata <- rbind(mtfdata, gssdata)
