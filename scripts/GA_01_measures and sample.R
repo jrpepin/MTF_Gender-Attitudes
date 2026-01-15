@@ -45,6 +45,7 @@ figDir  <- file.path(outDir, "figs")                        # Name of the sub-fo
 load(paste0(dataDir, "/mtf_form3.Rda"))
 load(paste0(dataDir, "/mtf_form5.Rda"))
 
+#################################################################################
 
 # VARIABLES --------------------------------------------------------------------
 
@@ -58,7 +59,7 @@ studyid    <- c(7927,  7928,  7929,  7930,
                 4536, 20022, 22480,  25382, 28401,
                 30985, 34409, 34861, 35218, 36263,
                 36408, 36798, 37182, 37416, 37841,
-                38156, 38503)
+                38156, 38503, 38882, 39172, 39444)
 
 surveyyear <- c(1976, 1977, 1978, 1979,
                 1980, 1981, 1982, 1983, 1984,
@@ -69,10 +70,10 @@ surveyyear <- c(1976, 1977, 1978, 1979,
                 2005, 2006, 2007, 2008, 2009,
                 2010, 2011, 2012, 2013, 2014,
                 2015, 2016, 2017, 2018, 2019,
-                2020, 2021)
+                2020, 2021, 2022, 2023, 2024)
 
 Xwalk <- data.frame(surveyyear, studyid)
-#####################################################################################
+
 # Set-up the data
 
 ## Select Variables
@@ -119,7 +120,7 @@ data$year[is.na(data$year)]  <- "1978" # 34 people in 1978 have a missing year v
 
 data$year <- droplevels(data)$year
 
-data$year <- as.character(data$year) %>%
+data$year <- as.character(data$year) |>
              as.integer(data$year)
 
 ## Weights

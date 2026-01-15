@@ -81,11 +81,11 @@ icpsr_download(file_id = c(  7927,  7928,  7929,  7930,
                              4536, 20022, 22480, 25382, 28401,
                             30985, 34409, 34861, 35218, 36263,
                             36408, 36798, 37182, 37416, 37841,
-                            38156, 38503),
+                            38156, 38503, 38882, 39172, 39444),
                download_dir = dataDir)
 
 # To download one survey year at a time (for yearly updates):
-  # icpsr_download(file_id = 37416)
+   icpsr_download(file_id = 39444, download_dir = dataDir)
 
 ## Clean up folders -- WARNING -- This code will delete files on your hard-drive. USE WITH CAUTION
 
