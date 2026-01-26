@@ -107,25 +107,31 @@ remove(to_be_deleted)
 
 # Loading the (Stata) data files -----------------------------------------------
 
+form2dta <- list.files(path=dataDir, pattern = ".-0002-Data.dta$|.-0003-Data.dta$", recursive = TRUE) # create a list of Form 2 data files -- different folders based on the year
 form3dta <- list.files(path=dataDir, pattern = ".-0003-Data.dta$|.-0004-Data.dta$", recursive = TRUE) # create a list of Form 3 data files -- different folders based on the year
 form5dta <- list.files(path=dataDir, pattern = ".-0005-Data.dta$|.-0006-Data.dta$", recursive = TRUE) # create a list of Form 5 data files -- different folders based on the year
 
+mtf_F2_list <- lapply(file.path(dataDir, form2dta), read.dta) # turn the list into a list of dataframes
 mtf_F3_list <- lapply(file.path(dataDir, form3dta), read.dta) # turn the list into a list of dataframes
 mtf_F5_list <- lapply(file.path(dataDir, form5dta), read.dta) # turn the list into a list of dataframes
 
+mtfF2 <- rbindlist(mtf_F2_list, use.names=TRUE, fill=TRUE) # Convert the list of data frames into one data frame
 mtfF3 <- rbindlist(mtf_F3_list, use.names=TRUE, fill=TRUE) # Convert the list of data frames into one data frame
 mtfF5 <- rbindlist(mtf_F5_list, use.names=TRUE, fill=TRUE) # Convert the list of data frames into one data frame
 
-## Keep only Form 3 & 5 variables
+## Keep only Form 2, 3 & 5 variables
+mtf_V2 <- select(mtfF2, V1, V5, V13, ARCHIVE_WT, starts_with("V2"))
 mtf_V3 <- select(mtfF3, V1, V5, V13, ARCHIVE_WT, starts_with("V3"))
 mtf_V5 <- select(mtfF5, V1, V5, V13, ARCHIVE_WT, starts_with("V5"))
 
-## Keep only Form 3 & 5 survey respondents
+## Keep only Form 2, 3 & 5 survey respondents
+mtf_V2 <- subset(mtf_V2, !is.na(V2151))
 mtf_V3 <- subset(mtf_V3, !is.na(V3151))
 mtf_V5 <- subset(mtf_V5, !is.na(V5151))
 
 ## Save the dataframe for easy open in the future
 ### Note: This data is NOT harmonized. Make frequent and judicious referral to the codebooks.
+save(mtf_V2, file=file.path(dataDir, "mtf_form2.Rda"))
 save(mtf_V3, file=file.path(dataDir, "mtf_form3.Rda"))
 save(mtf_V5, file=file.path(dataDir, "mtf_form5.Rda"))
 

@@ -35,13 +35,13 @@ conflict_prefer("filter", "dplyr")
 conflict_prefer("summarize", "dplyr")
 conflict_prefer("arrange", "dplyr")
 
-
 ## Specify the file paths
 projDir <- here::here()                                     # File path to this project's directory
 dataDir <- "./../../Data/@Monitoring the Future/icpsr_data" # File path to where data will be downloaded
 outDir  <- "output"                                         # Name of the sub-folder where we will save results
 figDir  <- file.path(outDir, "figs")                        # Name of the sub-folder where we will save generated figures
 
+load(paste0(dataDir, "/mtf_form2.Rda"))
 load(paste0(dataDir, "/mtf_form3.Rda"))
 load(paste0(dataDir, "/mtf_form5.Rda"))
 
@@ -77,17 +77,31 @@ Xwalk <- data.frame(surveyyear, studyid)
 # Set-up the data
 
 ## Select Variables
-mtf_V3 <- select(mtf_V3, V5, ARCHIVE_WT, V1, V13,                      # Survey variables
-               V3151, V3150, V3164, V3165, V3155, V3156, V3169,        # Demographic
-               V3214, V3216, V3215, V3211, V3212)                      # Project specific
+mtf_V2 <- select(
+  mtf_V2, V5, ARCHIVE_WT, V1, V13,                      # Survey variables
+  V2151, V2150, V2164, V2165, V2155, V2156, V2169,      # Demographic
+  V2248, V2249, V2250, V2251, V2252, V2253)             # Project specific
 
-mtf_V5 <- select(mtf_V5, V5, ARCHIVE_WT, V1, V13,                      # Survey variables
-               V5151, V5150, V5155, V5156, V5164, V5165, V5169,        # Demographic
-               V5265)                                                  # Project specific
+mtf_V3 <- select(
+  mtf_V3, V5, ARCHIVE_WT, V1, V13,                      # Survey variables
+  V3151, V3150, V3164, V3165, V3155, V3156, V3169,      # Demographic
+  V3214, V3216, V3215, V3211, V3212)                    # Project specific
+
+mtf_V5 <- select(
+  mtf_V5, V5, ARCHIVE_WT, V1, V13,                      # Survey variables
+  V5151, V5150, V5155, V5156, V5164, V5165, V5169,        # Demographic
+  V5265)                                                  # Project specific
 
 ## Rename Variables
+mtf_V2 <- dplyr::rename(mtf_V2,
+                        wt7611  = V5,      wt1217   = ARCHIVE_WT,    year      = V1,     region = V13,
+                        raceeth = V2151,   gender   = V2150,         momed     = V2164,  momemp = V2165,
+                        father  = V2155,   mother   = V2156,         religion  = V2169,
+                        hfw0    = V2248,   hfwh     = V2249,         hfwf      = V2250,
+                        hhwh    = V2251,   hhwf     = V2252,         h0wf      = V2253)
+
 mtf_V3 <- dplyr::rename(mtf_V3,      
-                      wt7611    = V5,      wt1217   = ARCHIVE_WT,   year       = V1,      region   = V13,
+                      wt7611    = V5,      wt1217   = ARCHIVE_WT,   year       = V1,      region = V13,
                       raceeth   = V3151,   gender   = V3150,        momed      = V3164,   momemp = V3165,
                       father    = V3155,   mother   = V3156,        religion   = V3169,
                       home      = V3214,   warm     = V3216,        suffer     = V3215,
@@ -100,15 +114,8 @@ mtf_V5 <- dplyr::rename(mtf_V5,
                       father    = V5155,   mother   = V5156,        religion   = V5169,
                       hdecide   = V5265)
 
-## Combine forms
-mtf_V3$hdecide <- NA
-mtf_V5$home    <- NA
-mtf_V5$warm    <- NA
-mtf_V5$suffer  <- NA
-mtf_V5$lead    <- NA
-mtf_V5$jobopp  <- NA
+data <- bind_rows(mtf_V2, mtf_V3, mtf_V5)
 
-data <- rbind(mtf_V3, mtf_V5)
 #####################################################################################
 # data Wrangling: data Transformation
 
@@ -154,7 +161,6 @@ data |>
 ### MTF did not include the "suffer" and "warm" items starting in 2018.
 ### MTF did not include "home", "jobopp", or "lead" items in 2021.
 ### MTF did not include "hdecide" item in 2022.
-
 
 data <- data |>
   mutate(
