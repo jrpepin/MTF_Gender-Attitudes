@@ -12,20 +12,21 @@
 library("pacman")                  # Load pacman package
 
 pacman::p_load(
-  here,       # relative file paths
-  foreign,    # read data
-  plyr,       #
-  dplyr,      # variable processing
-  tidyr,      # reshaping data
-  forcats,    # reverse factor variables
-  srvyr,      # calc % with survey weights
-  purrr,      # to use modify_at
-  MESS,       # round prop & preserve sum to 100%
-  data.table, #
-  gtsummary,  # pretty weighted tables
-  ggplot2,    # graphing
-  colorspace, # color palettes   
-  conflicted) # choose default packages
+  here,         # relative file paths
+  foreign,      # read data
+  plyr,         #
+  dplyr,        # variable processing
+  tidyr,        # reshaping data
+  forcats,      # reverse factor variables
+  srvyr,        # calc % with survey weights
+  purrr,        # to use modify_at
+  MESS,         # round prop & preserve sum to 100%
+  data.table,   #
+  gtsummary,    # pretty weighted tables
+  ggplot2,      # graphing
+  geomtextpath, # label text as lines
+  colorspace,   # color palettes   
+  conflicted)   # choose default packages
 
 ## Address any conflicts in the packages
 conflict_scout() # identify the conflicts
