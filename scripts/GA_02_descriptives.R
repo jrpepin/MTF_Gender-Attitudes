@@ -74,7 +74,7 @@ fig1d <- figdata_svy |>
   group_by(year, sphere, variable, val) |>
   summarize(prop = survey_mean(na.rm = TRUE, vartype = "ci"))
 
-write.csv(fig1d, file = file.path(outDir, "dol_Figure 1.csv"))
+write.csv(fig1d, file = file.path(outDir, "ga_Figure 1.csv"))
 saveRDS(fig1d, file.path(outDir,"mtf_ga.rds"))
 
 

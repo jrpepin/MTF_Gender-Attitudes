@@ -140,7 +140,7 @@ data <- data |>
       year  <= 2011 ~ wt7611,
       year  >= 2012 ~ wt1217))
 
-## Gender attitudes
+## Gender attitudes ------------------------------------------------------------
 ### "home", "hdecide", "suffer", "warm", "lead", "jobopp"
 
 data |> 
@@ -241,6 +241,82 @@ data$suffer  <- factor(data$suffer,  levels = c("Agree","Disagree"), ordered = F
 data$warm    <- factor(data$warm,    levels = c("Disagree","Agree"), ordered = FALSE) 
 data$lead    <- factor(data$lead,    levels = c("Disagree","Agree"), ordered = FALSE) 
 data$jobopp  <- factor(data$jobopp,  levels = c("Disagree","Agree"), ordered = FALSE)
+
+
+## Work-family arrangement attitudes -------------------------------------------
+### "hfw0", "hfwh", "hfwf", "hhwh", "hhwf", "h0wf"
+
+data <- data |>
+  mutate(
+    hfw0 = case_when(
+      hfw0 == "1" | hfw0 == "NT ACCEP"  | hfw0 == "NT ACCEP:(1)" | 
+      hfw0 == "Not at all acceptable"   | hfw0 == "NOT@ALL:(1)"  ~ "NOT AT ALL ACCEPTABLE",
+      hfw0 == "2" | hfw0 == "SM ACCEP"  | hfw0 == "SM ACCEP:(2)" | 
+      hfw0 == "Somewhat acceptable"     | hfw0 == "SOMEWHAT:(2)" ~ "SOMEWHAT ACCEPTABLE",
+      hfw0 == "3" | hfw0 == "ACCEPTBL"  | hfw0 == "ACCEPTBL:(3)" | 
+      hfw0 == "Acceptable"                                       ~ "ACCEPTABLE",
+      hfw0 == "4" | hfw0 == "DESIRABL"  | hfw0 == "DESIRABL:(4)" | 
+      hfw0 == "Desirable"               | hfw0 == "DESIRBL:(4)"  ~ "DESIRABLE",      
+      TRUE                                                       ~  NA_character_ ),
+    hfwh = case_when(
+      hfwh == "1" | hfwh == "NT ACCEP"  | hfwh == "NT ACCEP:(1)" | 
+      hfwh == "Not at all acceptable"   | hfwh == "NOT@ALL:(1)"  ~ "NOT AT ALL ACCEPTABLE",
+      hfwh == "2" | hfwh == "SM ACCEP"  | hfwh == "SM ACCEP:(2)" | 
+      hfwh == "Somewhat acceptable"     | hfwh == "SOMEWHAT:(2)" ~ "SOMEWHAT ACCEPTABLE",
+      hfwh == "3" | hfwh == "ACCEPTBL"  | hfwh == "ACCEPTBL:(3)" | 
+      hfwh == "Acceptable"                                       ~ "ACCEPTABLE",
+      hfwh == "4" | hfwh == "DESIRABL"  | hfwh == "DESIRABL:(4)" | 
+      hfwh == "Desirable"               | hfwh == "DESIRBL:(4)"  ~ "DESIRABLE",      
+      TRUE                                                       ~  NA_character_ ),      
+    hfwf = case_when(
+      hfwf == "1" | hfwf == "NT ACCEP"  | hfwf == "NT ACCEP:(1)" | 
+      hfwf == "Not at all acceptable"   | hfwf == "NOT@ALL:(1)"  ~ "NOT AT ALL ACCEPTABLE",
+      hfwf == "2" | hfwf == "SM ACCEP"  | hfwf == "SM ACCEP:(2)" | 
+      hfwf == "Somewhat acceptable"     | hfwf == "SOMEWHAT:(2)" ~ "SOMEWHAT ACCEPTABLE",
+      hfwf == "3" | hfwf == "ACCEPTBL"  | hfwf == "ACCEPTBL:(3)" | 
+      hfwf == "Acceptable"                                       ~ "ACCEPTABLE",
+      hfwf == "4" | hfwf == "DESIRABL"  | hfwf == "DESIRABL:(4)" | 
+      hfwf == "Desirable"               | hfwf == "DESIRBL:(4)"  ~ "DESIRABLE",      
+      TRUE                                                       ~  NA_character_ ),
+    hhwh = case_when(
+      hhwh == "1" | hhwh == "NT ACCEP"  | hhwh == "NT ACCEP:(1)" | 
+      hhwh == "Not at all acceptable"   | hhwh == "NOT@ALL:(1)"  ~ "NOT AT ALL ACCEPTABLE",
+      hhwh == "2" | hhwh == "SM ACCEP"  | hhwh == "SM ACCEP:(2)" | 
+      hhwh == "Somewhat acceptable"     | hhwh == "SOMEWHAT:(2)" ~ "SOMEWHAT ACCEPTABLE",
+      hhwh == "3" | hhwh == "ACCEPTBL"  | hhwh == "ACCEPTBL:(3)" | 
+      hhwh == "Acceptable"                                       ~ "ACCEPTABLE",
+      hhwh == "4" | hhwh == "DESIRABL"  | hhwh == "DESIRABL:(4)" | 
+      hhwh == "Desirable"               | hhwh == "DESIRBL:(4)"  ~ "DESIRABLE",      
+      TRUE                                                       ~  NA_character_ ),
+    hhwf = case_when(
+      hhwf == "1" | hhwf == "NT ACCEP"  | hhwf == "NT ACCEP:(1)" | 
+      hhwf == "Not at all acceptable"   | hhwf == "NOT@ALL:(1)"  ~ "NOT AT ALL ACCEPTABLE",
+      hhwf == "2" | hhwf == "SM ACCEP"  | hhwf == "SM ACCEP:(2)" | 
+      hhwf == "Somewhat acceptable"     | hhwf == "SOMEWHAT:(2)" ~ "SOMEWHAT ACCEPTABLE",
+      hhwf == "3" | hhwf == "ACCEPTBL"  | hhwf == "ACCEPTBL:(3)" | 
+      hhwf == "Acceptable"                                       ~ "ACCEPTABLE",
+      hhwf == "4" | hhwf == "DESIRABL"  | hhwf == "DESIRABL:(4)" | 
+      hhwf == "Desirable"               | hhwf == "DESIRBL:(4)"  ~ "DESIRABLE",      
+      TRUE                                                       ~  NA_character_ ),
+    h0wf = case_when(
+      h0wf == "1" | h0wf == "NT ACCEP"  | h0wf == "NT ACCEP:(1)" | 
+      h0wf == "Not at all acceptable"   | h0wf == "NOT@ALL:(1)"  ~ "NOT AT ALL ACCEPTABLE",
+      h0wf == "2" | h0wf == "SM ACCEP"  | h0wf == "SM ACCEP:(2)" | 
+      h0wf == "Somewhat acceptable"     | h0wf == "SOMEWHAT:(2)" ~ "SOMEWHAT ACCEPTABLE",
+      h0wf == "3" | h0wf == "ACCEPTBL"  | h0wf == "ACCEPTBL:(3)" | 
+      h0wf == "Acceptable"                                       ~ "ACCEPTABLE",
+      h0wf == "4" | h0wf == "DESIRABL"  | h0wf == "DESIRABL:(4)" | 
+      h0wf == "Desirable"               | h0wf == "DESIRBL:(4)"  ~ "DESIRABLE",      
+      TRUE                                                       ~  NA_character_ ))
+
+data$hfw0 <- ordered(data$hfw0, levels = c("DESIRABLE", "ACCEPTABLE", "SOMEWHAT ACCEPTABLE",  "NOT AT ALL ACCEPTABLE"))
+data$hfwh <- ordered(data$hfwh, levels = c("DESIRABLE", "ACCEPTABLE", "SOMEWHAT ACCEPTABLE",  "NOT AT ALL ACCEPTABLE"))
+data$hfwf <- ordered(data$hfwf, levels = c("DESIRABLE", "ACCEPTABLE", "SOMEWHAT ACCEPTABLE",  "NOT AT ALL ACCEPTABLE"))
+data$hhwh <- ordered(data$hhwh, levels = c("DESIRABLE", "ACCEPTABLE", "SOMEWHAT ACCEPTABLE",  "NOT AT ALL ACCEPTABLE"))
+data$hhwf <- ordered(data$hhwf, levels = c("DESIRABLE", "ACCEPTABLE", "SOMEWHAT ACCEPTABLE",  "NOT AT ALL ACCEPTABLE"))
+data$h0wf <- ordered(data$h0wf, levels = c("DESIRABLE", "ACCEPTABLE", "SOMEWHAT ACCEPTABLE",  "NOT AT ALL ACCEPTABLE"))
+
+## Demographics ----------------------------------------------------------------
 
 ## Race
 table(data$year, data$raceeth)
@@ -345,10 +421,17 @@ data$religion <- factor(data$religion, levels = c("NEVER", "RARELY",
 ################################################################################
 # Select Sample
 
-data <- select(data, weight, year, home, hdecide, suffer, warm, lead, jobopp, 
+data <- select(data, weight, year, 
+               home, hdecide, suffer, warm, lead, jobopp, 
+               hfw0, hfwh, hfwf, hhwh, hhwf, h0wf,
                racesex, race, gender, momed, momemp, religion)
 
-## Missing
+## Subset WFAs (form 2)
+mtf.wfa <- subset(data,
+                  !is.na(hfw0) | !is.na(hfwh) | !is.na(hfwf) | 
+                  !is.na(hhwh) | !is.na(hhwf) | !is.na(h0wf))
+
+## Missing on gender attitudes
 mtf7617 <- subset(data, ((!is.na(home) & !is.na(suffer) & !is.na(warm) & !is.na(lead) & !is.na(jobopp)) | !is.na(hdecide)) & year< 2018)
 mtf1820 <- subset(data, ((!is.na(home) & !is.na(lead) & !is.na(jobopp)) | !is.na(hdecide)) & year>= 2018 & year < 2021)
 mtf21   <- subset(data, (!is.na(hdecide) & year== 2021))
@@ -362,4 +445,4 @@ data <- data |>
   arrange(desc(year))
 
 # Clean up environment
-remove(mtf_V3, mtf_V5, mtf7617, mtf1820, mtf21)
+remove(mtf_V2, mtf_V3, mtf_V5, mtf7617, mtf1820, mtf21)
